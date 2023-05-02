@@ -22,7 +22,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'follow = wall_follower.wall_follower:main',
+            'wall_follower = wall_follower.wall_follower:main',
             'track = wall_follower.box_follower:main'
         ],
     },

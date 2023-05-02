@@ -28,10 +28,15 @@ class Follow(Node):
         timer_period = 0.5  # seconds
 
         # self.i = 0
-        self.dir = 0
-        self.front_wall = False
-        self.frontright_wall = False
-        self.frontleft_wall = False
+        # self.dir = 0
+        # self.front_wall = False
+        # self.frontright_wall = False
+        # self.backright = False
+        # self.frontleft_wall = False
+
+        self.turnleft = False
+        self.turnright = False
+        self.turnfast = False
 
         self.timer = self.create_timer(timer_period, self.timer_callback)
         
@@ -55,36 +60,35 @@ class Follow(Node):
         msg = Twist()
         # key = self.getch()
         # if key == 'm':
-        #     msg.linear.x = 1.0  
-        # elif key == 'b':
-        #     msg.linear.x = -1.0  
+        #     msg.linear.x = 0.0
+        #     msg.angular.z = 0.0
+        #     return
+        # if self.front_wall == False:
+        #     if (self.frontright_wall == True) & (self.frontleft_wall == False):
+        #         msg.linear.x = -0.08
+        #         msg.angular.z = 0.5
+        #     elif (self.frontright_wall == False) & (self.frontleft_wall == True):
+        #         msg.linear.x = -0.08
+        #         msg.angular.z = -0.5
+        #     else:
+        #         msg.linear.x = -0.08
+        #         msg.angular.z = 0.0
         # else:
         #     msg.linear.x = 0.0
+        #     msg.angular.z = 1.0
 
-
-
-        # if (self.dir != 0):
-        #     if self.dir-180 >= 0:
-        #         msg.angular.z = -1.0
-        #     elif self.dir-180 < 0:
-        #         msg.angular.z = 1.0
-        # else:
-        #     msg.angular.z = 0.0
-
-        if self.front_wall == False:
-            if (self.frontright_wall == True) & (self.frontleft_wall == False):
-                msg.linear.x = 0.08
-                msg.angular.z = 1.0
-            elif (self.frontright_wall == False) & (self.frontleft_wall == True):
-                msg.linear.x = 0.08
-                msg.angular.z = -1.0
-            else:
-                msg.linear.x = 0.08
-                msg.angular.z = 0.0
-        else:
+        if self.turnleft:
+            msg.linear.x = -0.08
+            msg.angular.z = 0.5
+        elif self.turnright: 
+            msg.linear.x = -0.08
+            msg.angular.z = -0.5
+        elif self.turnfast:
             msg.linear.x = 0.0
             msg.angular.z = 1.0
-
+        else:
+            msg.linear.x = -0.08
+            msg.angular.z = 0.0
 
         self.publisher_.publish(msg)
         
@@ -98,46 +102,65 @@ class Follow(Node):
         '''
 
         min_front_dist = msg.ranges[0]
-        for i in range(-22,23):
+        for i in range(-47,47):
             if msg.ranges[i] < min_front_dist:
                 min_front_dist = msg.ranges[i]
 
-        min_frontleft_dist = msg.ranges[45]
-        for i in range(23,68):
-            if msg.ranges[i] < min_frontleft_dist:
-                min_frontleft_dist = msg.ranges[i]
+        # min_frontleft_dist = msg.ranges[95]
+        # for i in range(48,142):
+        #     if msg.ranges[i] < min_frontleft_dist:
+        #         min_frontleft_dist = msg.ranges[i]
 
-        min_left_dist = msg.ranges[90]
-        for i in range(68,113):
-            if msg.ranges[i] < min_left_dist:
-                min_left_dist = msg.ranges[i]
+        # min_left_dist = msg.ranges[190]
+        # for i in range(143,237):
+        #     if msg.ranges[i] < min_left_dist:
+        #         min_left_dist = msg.ranges[i]
 
-        min_right_dist = msg.ranges[270]
-        for i in range(247,293):
+        min_right_dist = msg.ranges[570]
+        max_right_dist = msg.ranges[570]
+        for i in range(522, 617):
             if msg.ranges[i] < min_right_dist:
                 min_right_dist = msg.ranges[i]
+            if msg.ranges[i] > max_right_dist:
+                max_right_dist = msg.ranges[i]
 
-        min_frontright_dist = msg.ranges[315]
-        for i in range(293,338):
+        min_frontright_dist = msg.ranges[665]
+        max_frontright_dist = msg.ranges[665]
+        for i in range(618,712):
             if msg.ranges[i] < min_frontright_dist:
                 min_frontright_dist = msg.ranges[i]
+            if msg.ranges[i] > max_frontright_dist:
+                max_frontright_dist = msg.ranges[i]
 
-        if min_front_dist < 0.4:
-            self.front_wall = True
-            self.forward_stop = True
-        else:
-            self.front_wall = False
-            self.forward_stop = False
+        # if min_front_dist < 0.4:
+        #     self.front_wall = True
+        #     self.forward_stop = True
+        # else:
+        #     self.front_wall = False
+        #     self.forward_stop = False
 
-        if min_frontright_dist < 0.4:
-            self.frontright_wall = True
+        if min_frontright_dist < 0.2:
+            self.turnleft = True
+            self.turnright = False
+        elif min_frontright_dist > 0.2 and min_frontright_dist < 0.4:
+            self.turnleft = False
+            self.turnright = True
         else:
-            self.frontright_wall = False
+            self.turnleft = False
+            self.turnright = False
+        
+        if min_front_dist < 0.2:
+            self.turnleft = False
+            self.turnright = False
+            self.turnfast = True
+        else:
+            self.turnfast = False
 
-        if min_frontleft_dist < 0.4:
-            self.frontleft_wall = True
-        else:
-            self.frontleft_wall = False
+
+        # if min_frontleft_dist < 0.4:
+        #     self.frontleft_wall = True
+        # else:
+        #     self.frontleft_wall = False
 
 
         # self.front_dist = msg.ranges[0]
@@ -162,9 +185,6 @@ class Follow(Node):
         # elif(msg.ranges[570] < 1):
         #     self.dir = 270
         # self.get_logger().info("Angle where Box is : %f" %(self.dir))
-
-
-
 
         # self.get_logger().info(str(len(msg.ranges)))
         # for i in range(337,360):
