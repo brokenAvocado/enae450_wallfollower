@@ -34,9 +34,10 @@ class Follow(Node):
         # self.backright = False
         # self.frontleft_wall = False
 
-        self.turnleft = False
-        self.turnright = False
-        self.turnfast = False
+        self.turnLeft = False
+        self.turnRight = False
+        self.turnSharpLeft = False
+        self.turnSharpRight = False
 
         self.timer = self.create_timer(timer_period, self.timer_callback)
         
@@ -76,16 +77,18 @@ class Follow(Node):
         # else:
         #     msg.linear.x = 0.0
         #     msg.angular.z = 1.0
-
-        if self.turnleft:
+        if self.turnLeft:
             msg.linear.x = -0.08
             msg.angular.z = 0.5
-        elif self.turnright: 
+        elif self.turnRight: 
             msg.linear.x = -0.08
             msg.angular.z = -0.5
-        elif self.turnfast:
+        elif self.turnSharpLeft:
             msg.linear.x = 0.0
             msg.angular.z = 1.0
+        elif self.turnSharpRight:
+            msg.linear.x = 0.0
+            msg.angular.z = -1.0
         else:
             msg.linear.x = -0.08
             msg.angular.z = 0.0
@@ -117,20 +120,14 @@ class Follow(Node):
         #         min_left_dist = msg.ranges[i]
 
         min_right_dist = msg.ranges[570]
-        max_right_dist = msg.ranges[570]
         for i in range(522, 617):
             if msg.ranges[i] < min_right_dist:
                 min_right_dist = msg.ranges[i]
-            if msg.ranges[i] > max_right_dist:
-                max_right_dist = msg.ranges[i]
 
         min_frontright_dist = msg.ranges[665]
-        max_frontright_dist = msg.ranges[665]
         for i in range(618,712):
             if msg.ranges[i] < min_frontright_dist:
                 min_frontright_dist = msg.ranges[i]
-            if msg.ranges[i] > max_frontright_dist:
-                max_frontright_dist = msg.ranges[i]
 
         # if min_front_dist < 0.4:
         #     self.front_wall = True
@@ -139,22 +136,41 @@ class Follow(Node):
         #     self.front_wall = False
         #     self.forward_stop = False
 
-        if min_frontright_dist < 0.2:
-            self.turnleft = True
-            self.turnright = False
+        if min_frontright_dist < 0.2 and min_front_dist > 0.2:
+            self.turnLeft = True
+            self.turnRight = False
+            self.get_logger().info("Left")
         elif min_frontright_dist > 0.2 and min_frontright_dist < 0.4:
-            self.turnleft = False
-            self.turnright = True
+            self.turnLeft = False
+            self.turnRight = True
+            self.get_logger().info("Right")
         else:
-            self.turnleft = False
-            self.turnright = False
+            self.turnLeft = False
+            self.turnRight = False
         
         if min_front_dist < 0.2:
-            self.turnleft = False
-            self.turnright = False
-            self.turnfast = True
+            self.turnLeft = False
+            self.turnRight = False
+            if min_right_dist < 0.25:
+                self.turnSharpLeft = True
+                self.turnSharpRight = False
+                self.get_logger().info("Sharp Left")
+            else:
+                self.turnSharpLeft = False
+                self.turnSharpRight = True
+                self.get_logger().info("Sharp Right1")
         else:
-            self.turnfast = False
+            self.turnSharpLeft = False
+            self.turnSharpRight = False
+
+        if min_frontright_dist > 0.3 and min_right_dist > 0.4:
+            self.turnLeft = False
+            self.turnRight = False
+            self.turnFront = False
+            self.turnSharpRight = True
+            self.get_logger().info("Sharp Right2")
+        else:
+            self.turnSharpRight = False
 
 
         # if min_frontleft_dist < 0.4:
