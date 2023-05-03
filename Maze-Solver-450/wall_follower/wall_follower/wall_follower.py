@@ -1,5 +1,6 @@
 """
-    Minimal code for wall follower 
+    Group 6: Wall Follower Code for Maze Solver
+    Uses a wall following algorithm in order to solve complex mazes
 """
 
 import rclpy
