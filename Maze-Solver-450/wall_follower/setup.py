@@ -23,7 +23,8 @@ setup(
     entry_points={
         'console_scripts': [
             'wall_follower = wall_follower.wall_follower:main',
-            'track = wall_follower.box_follower:main'
+            'track = wall_follower.box_follower:main',
+            'sim_wall_follower = wall_follower.sim_wall_follower:main'
         ],
     },
 )
