@@ -61,21 +61,36 @@ class Follow(Node):
         msg = Twist()
         # key = self.getch()
 
-        if self.min_frontright_dist < 0.4:
+        ########### Gazebo vs Real World #################
+        # comment out the one not in use
+        # bound1 = 0.2
+        # bound2 = 0.4
+        # bound3 = 0.25
+        # bound4 = 0.3
+
+        bound1 = 0.35
+        bound2 = 0.28
+        bound3 = 0.5
+        bound4 = 0.15
+
+        if self.min_frontright_dist < bound1 and self.min_front_dist > bound1:
             msg.linear.x = 0.08
             msg.angular.z = 0.5
-        elif self.min_right_dist > 0.4: 
+        elif self.min_frontright_dist > bound1 and self.min_front_dist > bound1: 
             msg.linear.x = 0.08
             msg.angular.z = -0.5
-        # elif self.min_front_dist < 0.2 and self.min_right_dist < 0.2:
-        #     msg.linear.x = 0.0
-        #     msg.angular.z = -1.0
-        elif self.min_front_dist < 0.4:
-            msg.linear.x = 0.0
-            msg.angular.z = 2.0
         else:
             msg.linear.x = 0.08
             msg.angular.z = 0.0
+        # elif self.min_front_dist < 0.2 and self.min_right_dist < 0.2:
+        #     msg.linear.x = 0.0
+        #     msg.angular.z = -1.0
+        if self.min_front_dist < bound2 and self.min_right_dist < bound3:
+            msg.linear.x = 0.0
+            msg.angular.z = 2.0
+        elif self.min_front_dist < bound2 and self.min_front_dist > bound3:
+            msg.linear.x = 0.0
+            msg.angular.z = -2.0
 
         self.publisher_.publish(msg)
     
@@ -84,32 +99,87 @@ class Follow(Node):
         Subscription Callback 
         TODO: implement
         '''
-        self.get_logger().info(str(len(msg.ranges)))
+        # self.get_logger().info(str(len(msg.ranges)))
 
-        self.min_front_dist = msg.ranges[0]
-        for i in range(-5, 5):
+        ########### Gazebo vs Real World #################
+        # comment out the one not in use
+
+        # Real World
+        # front = range(-47,47)
+        # right = range(522, 617)
+        # front_right = range(618,712)
+        # front_left = range(48,142)
+        # left = range(143,237)
+        # f = 0
+        # fl = 95
+        # l = 190
+        # r = 570
+        # fr = 665
+
+
+        # Gazebo
+        front = range(-7,7)
+        right = range(247, 292)
+        front_right = range(292,337)
+        front_left = range(23,67)
+        left = range(68,112)
+        f = 0
+        fl = 45
+        l = 90
+        r = 270
+        fr = 315
+
+        self.min_front_dist = msg.ranges[f]
+        for i in front:
             if msg.ranges[i] < self.min_front_dist:
                 self.min_front_dist = msg.ranges[i]
 
-        # min_frontleft_dist = msg.ranges[95]
-        # for i in range(48,142):
+        # min_frontleft_dist = msg.ranges[fl]
+        # for i in front_left:
         #     if msg.ranges[i] < min_frontleft_dist:
         #         min_frontleft_dist = msg.ranges[i]
 
         # min_left_dist = msg.ranges[190]
-        # for i in range(143,237):
+        # for i in left:
         #     if msg.ranges[i] < min_left_dist:
         #         min_left_dist = msg.ranges[i]
 
-        self.min_right_dist = msg.ranges[90]
-        for i in range(68, 112):
+        self.min_right_dist = msg.ranges[r]
+        for i in right:
             if msg.ranges[i] < self.min_right_dist:
                 self.min_right_dist = msg.ranges[i]
 
-        self.min_frontright_dist = msg.ranges[45]
-        for i in range(23, 67):
+        self.min_frontright_dist = msg.ranges[fr]
+        for i in front_right:
             if msg.ranges[i] < self.min_frontright_dist:
                 self.min_frontright_dist = msg.ranges[i]
+
+        # NOTE Eric's deprecated code 
+
+        # self.min_front_dist = msg.ranges[0]
+        # for i in range(-5, 5):
+        #     if msg.ranges[i] < self.min_front_dist:
+        #         self.min_front_dist = msg.ranges[i]
+
+        # # min_frontleft_dist = msg.ranges[95]
+        # # for i in range(48,142):
+        # #     if msg.ranges[i] < min_frontleft_dist:
+        # #         min_frontleft_dist = msg.ranges[i]
+
+        # # min_left_dist = msg.ranges[190]
+        # # for i in range(143,237):
+        # #     if msg.ranges[i] < min_left_dist:
+        # #         min_left_dist = msg.ranges[i]
+
+        # self.min_right_dist = msg.ranges[90]
+        # for i in range(68, 112):
+        #     if msg.ranges[i] < self.min_right_dist:
+        #         self.min_right_dist = msg.ranges[i]
+
+        # self.min_frontright_dist = msg.ranges[45]
+        # for i in range(23, 67):
+        #     if msg.ranges[i] < self.min_frontright_dist:
+        #         self.min_frontright_dist = msg.ranges[i]
         
         # NOTE Direction Booleans deprecated
         # if min_frontright_dist < 0.2 and min_front_dist > 0.2:
