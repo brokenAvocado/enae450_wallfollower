@@ -74,7 +74,7 @@ class Follow(Node):
 
         fast_linear = 0.12
         fast_angular = 1.0
-        med_angular = 0.28
+        med_angular = 0.3
         slow_angular = 0.15
 
         if self.min_frontright_dist < bound1 and self.min_front_dist > bound3:
