@@ -34,10 +34,9 @@ class Follow(Node):
 
         self.min_front_dist = 0
         self.min_frontright_dist = 0
-        self.min_right_dist = 0
-
-
-
+        self.min_backright_dist = 0
+        self.min_frontleft_dist = 0
+        self.min_backleft_dist = 0
 
         self.timer = self.create_timer(timer_period, self.timer_callback)
         
@@ -68,29 +67,48 @@ class Follow(Node):
         # bound3 = 0.25
         # bound4 = 0.3
 
-        bound1 = 0.35
-        bound2 = 0.28
+        bound1 = 0.43
+        bound2 = 0.34
         bound3 = 0.5
         bound4 = 0.15
 
-        if self.min_frontright_dist < bound1 and self.min_front_dist > bound1:
-            msg.linear.x = 0.08
-            msg.angular.z = 0.5
-        elif self.min_frontright_dist > bound1 and self.min_front_dist > bound1: 
-            msg.linear.x = 0.08
-            msg.angular.z = -0.5
+        fast_linear = 0.12
+        fast_angular = 1.0
+        med_angular = 0.28
+        slow_angular = 0.15
+
+        if self.min_frontright_dist < bound1 and self.min_front_dist > bound3:
+            msg.linear.x = fast_linear
+            msg.angular.z = slow_angular
+            if self.min_frontright_dist < bound2:
+                msg.angular.z = med_angular
+            self.get_logger().info("left")
+        elif self.min_frontleft_dist < bound1 and self.min_front_dist > bound3: 
+            msg.linear.x = fast_linear
+            msg.angular.z = -slow_angular
+            if self.min_frontleft_dist < bound2:
+                msg.angular.z = -med_angular
+            self.get_logger().info("right")
+        elif self.min_front_dist < bound3:
+            if self.min_backright_dist < bound3 and self.min_backleft_dist < bound3:
+                msg.linear.x = 0.0
+                msg.angular.z = 1.5
+                self.get_logger().info("turn around")
+            elif self.min_backleft_dist < self.min_backright_dist:
+                msg.linear.x = fast_linear
+                msg.angular.z = -1.0
+                self.get_logger().info("sharp right")
+            elif self.min_backleft_dist > self.min_backright_dist:
+                msg.linear.x = fast_linear
+                msg.angular.z = 1.0
+                self.get_logger().info("sharp left")
         else:
             msg.linear.x = 0.08
             msg.angular.z = 0.0
+            self.get_logger().info("straight")
         # elif self.min_front_dist < 0.2 and self.min_right_dist < 0.2:
         #     msg.linear.x = 0.0
         #     msg.angular.z = -1.0
-        if self.min_front_dist < bound2 and self.min_right_dist < bound3:
-            msg.linear.x = 0.0
-            msg.angular.z = 2.0
-        elif self.min_front_dist < bound2 and self.min_front_dist > bound3:
-            msg.linear.x = 0.0
-            msg.angular.z = -2.0
 
         self.publisher_.publish(msg)
     
@@ -119,10 +137,10 @@ class Follow(Node):
 
         # Gazebo
         front = range(-7,7)
-        right = range(247, 292)
-        front_right = range(292,337)
-        front_left = range(23,67)
-        left = range(68,112)
+        back_right = range(240,260)
+        front_right = range(280,350)
+        front_left = range(23,80)
+        back_left = range(100,120)
         f = 0
         fl = 45
         l = 90
@@ -134,20 +152,20 @@ class Follow(Node):
             if msg.ranges[i] < self.min_front_dist:
                 self.min_front_dist = msg.ranges[i]
 
-        # min_frontleft_dist = msg.ranges[fl]
-        # for i in front_left:
-        #     if msg.ranges[i] < min_frontleft_dist:
-        #         min_frontleft_dist = msg.ranges[i]
+        self.min_frontleft_dist = msg.ranges[fl]
+        for i in front_left:
+            if msg.ranges[i] < self.min_frontleft_dist:
+                self.min_frontleft_dist = msg.ranges[i]
 
-        # min_left_dist = msg.ranges[190]
-        # for i in left:
-        #     if msg.ranges[i] < min_left_dist:
-        #         min_left_dist = msg.ranges[i]
+        self.min_backleft_dist = msg.ranges[l]
+        for i in back_left:
+            if msg.ranges[i] < self.min_backleft_dist:
+                self.min_backleft_dist = msg.ranges[i]
 
-        self.min_right_dist = msg.ranges[r]
-        for i in right:
-            if msg.ranges[i] < self.min_right_dist:
-                self.min_right_dist = msg.ranges[i]
+        self.min_backright_dist = msg.ranges[r]
+        for i in back_right:
+            if msg.ranges[i] < self.min_backright_dist:
+                self.min_backright_dist = msg.ranges[i]
 
         self.min_frontright_dist = msg.ranges[fr]
         for i in front_right:
