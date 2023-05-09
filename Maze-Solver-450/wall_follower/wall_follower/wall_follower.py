@@ -70,12 +70,20 @@ class Follow(Node):
         # bound4 = 0.3
 
         # Gazebo
-        bound1 = 0.40       # Side wall close threshold       
-        bound2 = 0.38       # Side wall too close threshold     
-        bound3 = 0.40       # Front wall threshold              
-        bound4 = 0.44       # Side wall far threshold          
-        bound5 = 0.45       # Back wall threshold               
-        bound6 = 0.45       # Side wall too far threshold      
+        nominal = 0.5
+        # bound1 = 0.38       # Side wall close threshold       
+        # bound2 = 0.34       # Side wall too close threshold     
+        # bound3 = 0.38       # Front wall threshold              
+        # bound4 = 0.40       # Side wall far threshold          
+        # bound5 = 0.45       # Back wall threshold               
+        # bound6 = 0.43       # Side wall too far threshold  
+
+        # bound1 = 0.40       # Side wall close threshold       
+        # bound2 = 0.38       # Side wall too close threshold     
+        # bound3 = 0.42       # Front wall threshold              
+        # bound4 = 0.50       # Side wall far threshold          
+        # bound5 = 0.55       # Back wall threshold               
+        # bound6 = 0.55       # Side wall too far threshold  
 
         ###################################################
 
@@ -85,6 +93,7 @@ class Follow(Node):
         med_angular = 0.28      
         slow_angular = 0.15   
 
+        # Corner/Intersection Turning 
         if self.min_front_dist < bound3:
             if self.min_backleft_dist < bound5 or self.min_backright_dist < bound5:
                 if self.min_backleft_dist < self.min_backright_dist:
@@ -99,10 +108,12 @@ class Follow(Node):
                 msg.linear.x = slow_linear
                 msg.angular.z = 1.0
                 self.get_logger().info("sharp left")
+        # Path Turning
         elif self.min_frontright_dist < bound1 and self.min_front_dist > bound3:
             if self.min_frontright_dist < bound2:
+                # For left only: slow_linear and fast_angular works
                 msg.linear.x = fast_linear
-                msg.angular.z = med_angular
+                msg.angular.z = med_angular 
                 self.get_logger().info("med left")
             else:
                 msg.linear.x = fast_linear
