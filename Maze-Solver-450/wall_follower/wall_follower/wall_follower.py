@@ -37,6 +37,7 @@ class Follow(Node):
         self.min_backright_dist = 0
         self.min_frontleft_dist = 0
         self.min_backleft_dist = 0
+        self.inTurn = False
 
         self.timer = self.create_timer(timer_period, self.timer_callback)
         
@@ -64,13 +65,15 @@ class Follow(Node):
         # comment out the one not in use
 
         # Real World
-        # bound1 = 0.2
-        # bound2 = 0.4
-        # bound3 = 0.25
-        # bound4 = 0.3
+        realfactor = 0.14
+        bound1 = 0.38-realfactor       # Side wall close threshold       
+        bound2 = 0.34-realfactor       # Side wall too close threshold     
+        bound3 = 0.38-realfactor       # Front wall threshold              
+        bound4 = 0.40-realfactor       # Side wall far threshold          
+        bound5 = 0.45-realfactor       # Back wall threshold               
+        bound6 = 0.43-realfactor       # Side wall too far threshold 
 
         # Gazebo
-        nominal = 0.5
         # bound1 = 0.38       # Side wall close threshold       
         # bound2 = 0.34       # Side wall too close threshold     
         # bound3 = 0.38       # Front wall threshold              
@@ -87,29 +90,36 @@ class Follow(Node):
 
         ###################################################
 
-        slow_linear = 0.01     
-        fast_linear = 0.12     
+        slow_linear = -0.01     
+        fast_linear = -0.12     
         fast_angular = 1.0     
         med_angular = 0.28      
         slow_angular = 0.15   
 
         # Corner/Intersection Turning 
-        if self.min_front_dist < bound3:
-            if self.min_backleft_dist < bound5 or self.min_backright_dist < bound5:
-                if self.min_backleft_dist < self.min_backright_dist:
-                    msg.linear.x = slow_linear
-                    msg.angular.z = -1.0
-                    self.get_logger().info("sharp right")
-                elif self.min_backleft_dist > self.min_backright_dist:
-                    msg.linear.x = slow_linear
-                    msg.angular.z = 1.0
-                    self.get_logger().info("sharp left")
-            else:
+        if self.min_front_dist < bound3: #and (self.min_backright_dist < bound5 or self.min_backleft_dist < bound5): #and not(self.inTurn):
+            if self.min_backright_dist < bound5:
+                # if self.min_backright_dist > bound4:
+                #     msg.linear.x = slow_linear
+                #     msg.angular.z = -1.0
+                #     self.get_logger().info("sharp right")
+                # if self.min_backright_dist < bound4:
                 msg.linear.x = slow_linear
                 msg.angular.z = 1.0
                 self.get_logger().info("sharp left")
+                self.inTurn = True
+            # elif self.min_backleft_dist < bound5:
+            #     msg.linear.x = slow_linear
+            #     msg.angular.z = -1.0
+            #     self.get_logger().info("sharp right")
+                # self.inTurn = True
+            else:
+                msg.linear.x = fast_linear+0.03
+                msg.angular.z = -(med_angular+0.3)
+                self.get_logger().info("special right hehe")
         # Path Turning
         elif self.min_frontright_dist < bound1 and self.min_front_dist > bound3:
+            self.inTurn = False
             if self.min_frontright_dist < bound2:
                 # For left only: slow_linear and fast_angular works
                 msg.linear.x = fast_linear
@@ -120,7 +130,12 @@ class Follow(Node):
                 msg.angular.z = slow_angular
                 self.get_logger().info("left")
         elif self.min_frontright_dist > bound4 and self.min_front_dist > bound3:
-            if self.min_frontright_dist > bound6:
+            self.inTurn = False
+            if self.min_frontright_dist > 0.35:
+                msg.linear.x = fast_linear+0.03
+                msg.angular.z = -(med_angular+0.3)
+                self.get_logger().info("special right")
+            elif self.min_frontright_dist > bound6:
                 msg.linear.x = fast_linear
                 msg.angular.z = -med_angular
                 self.get_logger().info("med right")
@@ -129,7 +144,8 @@ class Follow(Node):
                 msg.angular.z = -slow_angular
                 self.get_logger().info("right")
         else:
-            msg.linear.x = 0.08
+            self.inTurn = False
+            msg.linear.x = fast_linear
             msg.angular.z = 0.0
             self.get_logger().info("straight")
 
@@ -205,29 +221,29 @@ class Follow(Node):
         # comment out the one not in use
 
         # Real World
-        # front = range(-47,47)
-        # right = range(522, 617)
-        # front_right = range(618,712)
-        # front_left = range(48,142)
-        # left = range(143,237)
-        # f = 0
-        # fl = 95
-        # l = 190
-        # r = 570
-        # fr = 665
+        front = range(-15,15)
+        back_right = range(507, 549)
+        front_right = range(591,739)
+        front_left = range(49,169)
+        back_left = range(211,253)
+        f = 0
+        fl = 95
+        l = 190
+        r = 570
+        fr = 665
 
 
         # Gazebo
-        front = range(-7,7)
-        back_right = range(240,260)
-        front_right = range(280,350)       
-        front_left = range(23,80)
-        back_left = range(100,120)
-        f = 0
-        fl = 45
-        l = 90
-        r = 270
-        fr = 315
+        # front = range(-7,7)
+        # back_right = range(240,260)
+        # front_right = range(280,350)       
+        # front_left = range(23,80)
+        # back_left = range(100,120)
+        # f = 0
+        # fl = 45
+        # l = 90
+        # r = 270
+        # fr = 315
 
         ##################################################
 
